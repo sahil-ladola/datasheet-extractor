@@ -50,6 +50,12 @@ class Document:
         return len(self.pages)
 
 
+def hash_file(path: str | Path) -> str:
+    """SHA-256 hex digest of a file's bytes. Cheap, so callers may use it
+    to decide whether to parse a PDF at all."""
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
 class DocumentLoader:
     """PDF path in, ``Document`` out.
 
@@ -74,7 +80,7 @@ class DocumentLoader:
         if not path.is_file():
             raise FileNotFoundError(f"No such file: {path}")
 
-        sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        sha256 = hash_file(path)
 
         pages: list[str] = []
         with pdfplumber.open(path) as pdf:

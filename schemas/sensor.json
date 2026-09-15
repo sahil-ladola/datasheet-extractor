@@ -70,8 +70,8 @@
       "name": "ip_rating",
       "type": "string",
       "required": false,
-      "pattern": "^IP\\d{2}K?$",
-      "description": "Ingress protection rating, e.g. IP67"
+      "pattern": "^IP ?\\d{2}K?(?:[,;/ ]+IP ?\\d{2}K?)*$",
+      "description": "Ingress protection rating(s) as printed, e.g. IP67 or IP65; IP67"
     },
     {
       "name": "response_time",

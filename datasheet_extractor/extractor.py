@@ -74,8 +74,19 @@ class GeminiClient(LLMClient):
         # Imported here so the rest of the package, and the test suite, never
         # need the provider SDK to be importable.
         from google import genai
+        from google.genai import types
 
-        self._client = genai.Client(api_key=key)
+        # Free-tier traffic regularly sees 429 (rate limit) and 503 (high
+        # demand). Both are transient, so let the SDK retry with backoff.
+        retry = types.HttpRetryOptions(
+            attempts=5,
+            initial_delay=2.0,
+            max_delay=30.0,
+            http_status_codes=[429, 500, 502, 503, 504],
+        )
+        self._client = genai.Client(
+            api_key=key, http_options=types.HttpOptions(retry_options=retry)
+        )
 
     def complete(self, prompt: str) -> str:
         """Call Gemini in JSON mode at temperature zero and return its text."""

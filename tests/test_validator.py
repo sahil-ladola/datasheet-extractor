@@ -101,7 +101,7 @@ def test_boundary_values_are_inside_the_range(sensor_schema: Schema, good_record
 def test_enum_and_pattern_checks(sensor_schema: Schema, good_record) -> None:
     good_record["sensor_type"] = "Temperature"       # wrong case: normalised
     good_record["output_signal"] = "4...20 mA"       # not an allowed value
-    good_record["ip_rating"] = "IP 67"               # does not match ^IP\d{2}K?$
+    good_record["ip_rating"] = "IP6"                 # one digit short of a rating
 
     result = Validator(sensor_schema).validate(good_record)
 
@@ -112,5 +112,7 @@ def test_enum_and_pattern_checks(sensor_schema: Schema, good_record) -> None:
     assert codes(result, "ip_rating") == ["pattern_mismatch"]
     assert result.status == "warning"
 
-    good_record["ip_rating"] = "IP69K"
-    assert codes(Validator(sensor_schema).validate(good_record), "ip_rating") == []
+    # Real datasheets print one rating, or several with a space or separator.
+    for printed in ("IP69K", "IP 67", "IP65; IP67", "IP67, IP66"):
+        good_record["ip_rating"] = printed
+        assert codes(Validator(sensor_schema).validate(good_record), "ip_rating") == []
