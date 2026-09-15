@@ -1,0 +1,21 @@
+# Secrets
+.env
+
+# Data produced at runtime
+*.db
+*.sqlite
+datasheets/*.pdf
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Editors
+.vscode/
+.idea/

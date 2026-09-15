@@ -1,0 +1,93 @@
+{
+  "component_type": "sensor",
+  "fields": [
+    {
+      "name": "manufacturer",
+      "type": "string",
+      "required": true,
+      "description": "Company that makes the sensor, e.g. ifm, SICK, Balluff"
+    },
+    {
+      "name": "part_number",
+      "type": "string",
+      "required": true,
+      "description": "Manufacturer order code, exactly as printed"
+    },
+    {
+      "name": "sensor_type",
+      "type": "enum",
+      "required": true,
+      "values": ["temperature", "pressure", "proximity", "photoelectric", "flow",
+                 "level", "humidity", "vibration", "other"],
+      "description": "What the sensor measures"
+    },
+    {
+      "name": "supply_voltage_min",
+      "type": "number",
+      "unit": "V",
+      "required": true,
+      "range": [0, 60],
+      "description": "Lowest permitted DC supply voltage"
+    },
+    {
+      "name": "supply_voltage_max",
+      "type": "number",
+      "unit": "V",
+      "required": true,
+      "range": [0, 60],
+      "description": "Highest permitted DC supply voltage"
+    },
+    {
+      "name": "output_signal",
+      "type": "enum",
+      "required": true,
+      "values": ["4-20 mA", "0-10 V", "PNP", "NPN", "IO-Link", "Modbus", "relay", "other"],
+      "description": "Electrical output type"
+    },
+    {
+      "name": "operating_temp_min",
+      "type": "number",
+      "unit": "C",
+      "required": true,
+      "range": [-60, 50],
+      "description": "Lowest ambient operating temperature"
+    },
+    {
+      "name": "operating_temp_max",
+      "type": "number",
+      "unit": "C",
+      "required": true,
+      "range": [0, 200],
+      "description": "Highest ambient operating temperature"
+    },
+    {
+      "name": "measuring_range",
+      "type": "string",
+      "required": false,
+      "description": "Measuring span as printed, e.g. '0...10 bar' or '-50...150 C'"
+    },
+    {
+      "name": "ip_rating",
+      "type": "string",
+      "required": false,
+      "pattern": "^IP\\d{2}K?$",
+      "description": "Ingress protection rating, e.g. IP67"
+    },
+    {
+      "name": "response_time",
+      "type": "number",
+      "unit": "ms",
+      "required": false,
+      "range": [0, 10000],
+      "description": "Response or switching time"
+    },
+    {
+      "name": "weight",
+      "type": "number",
+      "unit": "g",
+      "required": false,
+      "range": [0, 20000],
+      "description": "Mass of the device"
+    }
+  ]
+}
