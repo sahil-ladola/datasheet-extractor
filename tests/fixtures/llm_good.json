@@ -1,0 +1,14 @@
+{
+  "manufacturer": "ifm electronic gmbh",
+  "part_number": "TN2405",
+  "sensor_type": "temperature",
+  "supply_voltage_min": {"value": 18, "unit": "V DC"},
+  "supply_voltage_max": {"value": 32, "unit": "V DC"},
+  "output_signal": "4-20 mA",
+  "operating_temp_min": {"value": -25, "unit": "C"},
+  "operating_temp_max": {"value": 80, "unit": "C"},
+  "measuring_range": "-50...150 C",
+  "ip_rating": "IP67",
+  "response_time": {"value": 3000, "unit": "ms"},
+  "weight": {"value": 120, "unit": "g"}
+}
