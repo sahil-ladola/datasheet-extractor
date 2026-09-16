@@ -16,6 +16,8 @@ from pathlib import Path
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 OUT = Path(__file__).parent / "screenshot.png"
 
@@ -23,12 +25,16 @@ OUT = Path(__file__).parent / "screenshot.png"
 def main(url: str) -> None:
     options = Options()
     options.add_argument("--headless=new")
-    options.add_argument("--window-size=1280,1150")
+    options.add_argument("--window-size=1280,1120")
     options.add_argument("--hide-scrollbars")
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(url)
         time.sleep(4)  # let Dash render the table and chart
+        # Show the page answering a question rather than its empty state.
+        cold = driver.find_element(By.ID, "f-cold")
+        cold.send_keys("-20", Keys.TAB)
+        time.sleep(2)
         driver.save_screenshot(str(OUT))
         print(f"wrote {OUT} ({OUT.stat().st_size // 1024} KB)")
     finally:
