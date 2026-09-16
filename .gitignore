@@ -19,3 +19,6 @@ dist/
 # Editors
 .vscode/
 .idea/
+
+# Claude desktop app launch config
+.claude/

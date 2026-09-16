@@ -239,15 +239,19 @@ class Store:
     # -- internals ---------------------------------------------------------
 
     def _find_identity(self, record: Record) -> int | None:
-        """Id of the row this record would replace, if any."""
-        if record.part_number:
+        """Id of the row this record would replace, if any.
+
+        The same file always maps to the same row, even if the model
+        extracted a different part number this time. Failing that, the
+        manufacturer plus part number identifies a revised datasheet.
+        """
+        row = self._conn.execute(
+            "SELECT id FROM records WHERE source_hash = ?", (record.source_hash,)
+        ).fetchone()
+        if row is None and record.part_number:
             row = self._conn.execute(
                 "SELECT id FROM records WHERE manufacturer IS ? AND part_number = ?",
                 (record.manufacturer, record.part_number),
-            ).fetchone()
-        else:
-            row = self._conn.execute(
-                "SELECT id FROM records WHERE source_hash = ?", (record.source_hash,)
             ).fetchone()
         return int(row["id"]) if row else None
 

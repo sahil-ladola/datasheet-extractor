@@ -7,6 +7,7 @@ therefore never share state, and nothing is written into the repo.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -25,7 +26,10 @@ def store(tmp_path: Path) -> Store:
 
 
 def make_record(sensor_schema: Schema, good_reply: str, **overrides: Any) -> Record:
-    """A validated record for the sample sensor, with optional field changes."""
+    """A validated record for the sample sensor, with optional field changes.
+
+    Each distinct part number gets its own file hash, as distinct PDFs would.
+    """
     raw = json.loads(good_reply)
     for key, value in overrides.items():
         raw[key] = value
@@ -34,7 +38,7 @@ def make_record(sensor_schema: Schema, good_reply: str, **overrides: Any) -> Rec
         result,
         component_type=sensor_schema.component_type,
         source_file=f"datasheets/{raw['part_number']}.pdf",
-        source_hash="a" * 64,
+        source_hash=hashlib.sha256(raw["part_number"].encode()).hexdigest(),
     )
 
 
@@ -72,6 +76,12 @@ def test_same_part_number_updates_instead_of_duplicating(store, sensor_schema, g
     assert store.count() == 1
     assert store.get(first_id).data["weight"] == 125
     assert store.get(first_id).source_hash == "b" * 64
+
+    # The same file reprocessed with a differently worded part number must
+    # update that file's row, not create a second one.
+    reworded = Record(**{**vars(revised), "part_number": "Omnigrad TN2405"})
+    assert store.upsert(reworded) == (first_id, False)
+    assert store.count() == 1
 
     # Files are remembered by hash so the pipeline can skip them next run.
     store.mark_file("c" * 64, "datasheets/scan.pdf", "skipped", reason="no text")
