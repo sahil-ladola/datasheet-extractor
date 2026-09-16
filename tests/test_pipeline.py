@@ -84,6 +84,25 @@ def test_failed_files_are_retried_on_the_next_run(
     assert client.calls == 4
 
 
+def test_oversized_number_in_reply_is_stored_as_an_error_not_a_crash(
+    tmp_path: Path, fixtures_dir: Path, good_reply: str
+) -> None:
+    # Regression test for the audit finding: a 401-digit integer used to raise
+    # OverflowError out of the validator and abort the whole batch.
+    reply = good_reply.replace('{"value": 120, "unit": "g"}', '{"value": 1' + "0" * 400 + ', "unit": "g"}')
+    client = FakeLLMClient([reply])
+    pipeline = build_pipeline(schema_path=SCHEMA_PATH, db_path=tmp_path / "db.sqlite", client=client)
+
+    with pipeline.store:
+        outcome = pipeline.process_paths([fixtures_dir / "sample_sensor.pdf"])[0]
+        record = pipeline.store.get(outcome.record_id)
+
+    assert outcome.outcome == "stored"
+    assert outcome.status == "error"
+    assert record.data["weight"] is None
+    assert [p.code for p in record.problems] == ["not_a_number"]
+
+
 def test_quota_exhaustion_defers_the_remaining_files(tmp_path: Path, fixtures_dir: Path) -> None:
     client = QuotaExhaustedClient()
     pipeline = build_pipeline(schema_path=SCHEMA_PATH, db_path=tmp_path / "db.sqlite", client=client)

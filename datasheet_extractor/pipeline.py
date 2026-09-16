@@ -128,14 +128,21 @@ class Pipeline:
             if self.delay:
                 time.sleep(self.delay)
 
-        result = self.validator.validate(raw)
-        record = Record.from_validation(
-            result,
-            component_type=self.extractor.schema.component_type,
-            source_file=path,
-            source_hash=sha256,
-        )
-        record_id, _ = self.store.upsert(record)
+        try:
+            result = self.validator.validate(raw)
+            record = Record.from_validation(
+                result,
+                component_type=self.extractor.schema.component_type,
+                source_file=path,
+                source_hash=sha256,
+            )
+            record_id, _ = self.store.upsert(record)
+        except Exception as exc:  # noqa: BLE001 - one bad record must not stop the batch
+            reason = f"{type(exc).__name__}: {exc}"
+            logger.debug("Validation or storage failed for %s", path, exc_info=True)
+            self.store.mark_file(sha256, path, "failed", reason=reason)
+            return FileOutcome(path, "failed", reason=reason)
+
         self.store.mark_file(sha256, path, "stored", record_id=record_id)
         return FileOutcome(
             path,

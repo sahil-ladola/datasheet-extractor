@@ -43,7 +43,9 @@ Each PDF passes through four small components, each with one job:
    to find, and turns the reply into a dictionary. Before sending, a small
    page-selection step keeps only the pages that look like specification
    tables and caps the total size, because most of a datasheet is marketing
-   copy and drawings and the free tier is rate-limited.
+   copy and drawings and the free tier is rate-limited. Note that this step
+   sends the selected text to Google's API, so do not run it on confidential
+   documents unless that is acceptable to you.
 3. **Validator** checks the dictionary: required fields present, units
    converted to one canonical unit per field (°F to °C, kg to g), values
    inside a plausible range, and enum and pattern rules. Anything wrong is
@@ -101,7 +103,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
 
-The suite has 25 tests and runs offline in well under a second. The model is
+The suite has 27 tests and runs offline in well under a second. The model is
 replaced by a fake client that returns scripted replies, so no API key or
 network is needed, and the same suite runs in GitHub Actions on every push.
 The two fixture PDFs under `tests/fixtures` are built by a standard-library

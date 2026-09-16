@@ -73,6 +73,25 @@ def test_unknown_and_missing_units_are_flagged(sensor_schema: Schema, good_recor
     assert result.status == "error"
 
 
+def test_non_numeric_and_non_finite_values_are_rejected(sensor_schema: Schema, good_record) -> None:
+    # A model can return text, JSON's non-standard NaN/Infinity, an overflowing
+    # exponent, or an integer too large for a float. All are unusable.
+    good_record["weight"] = {"value": "about 120", "unit": "g"}
+    good_record["response_time"] = {"value": float("nan"), "unit": "ms"}
+    good_record["supply_voltage_max"] = {"value": float("inf"), "unit": "V"}
+    good_record["operating_temp_max"] = {"value": 10 ** 400, "unit": "C"}
+
+    result = Validator(sensor_schema).validate(good_record)
+
+    for field in ("weight", "response_time", "supply_voltage_max", "operating_temp_max"):
+        assert codes(result, field) == ["not_a_number"], field
+        assert result.data[field] is None
+    assert result.status == "error"
+    # The message must not echo hundreds of digits back at the user.
+    message = next(p.message for p in result.problems if p.field == "operating_temp_max")
+    assert len(message) < 80
+
+
 def test_out_of_range_is_a_warning_and_the_value_is_kept(sensor_schema: Schema, good_record) -> None:
     good_record["operating_temp_max"] = {"value": 250, "unit": "C"}   # range is 0..200
 

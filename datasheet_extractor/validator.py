@@ -21,6 +21,7 @@ different manufacturers can be compared and filtered.
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -185,11 +186,17 @@ class Validator:
                 problems.append(Problem(spec.name, "missing", ERROR, "Required field not found"))
             return None, problems
 
+        # float() raises OverflowError for integers beyond the double range, and
+        # json.loads happily produces NaN, Infinity and 1e999. None of those is
+        # a usable specification value, so all are rejected the same way.
         try:
             number = float(raw_value)
-        except (TypeError, ValueError):
+            if not math.isfinite(number):
+                raise ValueError("non-finite")
+        except (TypeError, ValueError, OverflowError):
+            shown = repr(raw_value) if len(repr(raw_value)) <= 40 else repr(raw_value)[:40] + "..."
             problems.append(
-                Problem(spec.name, "not_a_number", ERROR, f"Expected a number, got {raw_value!r}")
+                Problem(spec.name, "not_a_number", ERROR, f"Expected a finite number, got {shown}")
             )
             return None, problems
 
