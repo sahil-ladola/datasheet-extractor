@@ -21,4 +21,4 @@ dist/
 .idea/
 
 # Claude desktop app launch config
-.claude/
+.claude/settings.local.json
