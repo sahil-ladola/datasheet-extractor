@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": ["Bash(pytest)", "Bash(pytest *)"],
+    "deny": ["Read(./.env)", "Read(./.env.*)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": "python .claude/hooks/protect_files.py"}]
+      }
+    ]
+  }
+}
